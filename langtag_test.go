@@ -35,3 +35,9 @@ func TestBest(t *testing.T) {
 		t.Errorf("Best with no supported = %q", got)
 	}
 }
+
+func TestBestInvalidHeader(t *testing.T) {
+	if got := Best(";;;q=abc", "en", "fr"); got != "en" {
+		t.Errorf("Best with invalid header = %q, want en", got)
+	}
+}

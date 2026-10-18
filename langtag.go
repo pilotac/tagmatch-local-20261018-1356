@@ -34,7 +34,10 @@ func Best(acceptLanguage string, supported ...string) string {
 	for _, s := range supported {
 		tags = append(tags, language.Make(s))
 	}
-	desired, _, _ := language.ParseAcceptLanguage(acceptLanguage)
+	desired, _, err := language.ParseAcceptLanguage(acceptLanguage)
+	if err != nil || len(desired) == 0 {
+		return supported[0]
+	}
 	_, idx, _ := language.NewMatcher(tags).Match(desired...)
 	return supported[idx]
 }
