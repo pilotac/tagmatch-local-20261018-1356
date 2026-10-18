@@ -1,4 +1,4 @@
-module github.com/pilotac/langtag-local-20261018-1254
+module github.com/pilotac/tagmatch-local-20261018-1356
 
 go 1.22
 
