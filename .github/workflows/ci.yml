@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, release/** ]
   pull_request:
     branches: [ main ]
 
@@ -10,6 +10,9 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -23,4 +26,25 @@ jobs:
         run: go vet ./...
 
       - name: Test
-        run: go test -race ./...
+        run: set -o pipefail; go test -json -coverprofile=coverage.out -race ./... | tee go-test.json
+
+      - name: Scan dependencies for CVEs (Trivy)
+        if: always()
+        continue-on-error: true
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: json
+          output: trivy.json
+          exit-code: '0'
+          severity: CRITICAL,HIGH,MEDIUM,LOW
+
+      - name: Send reports to LaneSync
+        if: always()
+        uses: ./.github/actions/lanesync-upload
+        with:
+          api-url: ${{ vars.SDLC_API_URL || 'https://unrelishable-erika-nonfactiously.ngrok-free.dev' }}
+          dev-branch: "main"
+          release-prefix: "release/"
+          pipeline: "Test"
